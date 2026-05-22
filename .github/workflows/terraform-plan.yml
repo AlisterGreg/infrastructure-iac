@@ -26,7 +26,7 @@ jobs:
         ports:
           - 4566:4566
         options: >-
-          --health-cmd "curl -sf http://localhost:4566/_ministack/health"
+          --health-cmd "wget -qO- http://localhost:4566/_ministack/health"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -74,14 +74,14 @@ jobs:
           path: terraform.plan
           if-no-files-found: error
 
-      - name: Initialise Terraform (LocalStack)
+      - name: Initialise Terraform (MiniStack)
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           AWS_ENDPOINT_URL: http://localhost:4566
         run: terraform init -reconfigure -backend=false
 
-      - name: Apply against LocalStack
+      - name: Apply against MiniStack
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
