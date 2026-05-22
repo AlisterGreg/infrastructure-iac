@@ -1,0 +1,70 @@
+name: Terraform Dry Run
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-dryrun-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: Terraform Dry Run
+    runs-on: ubuntu-latest
+    environment: pre-production
+
+    services:
+      ministack:
+        image: ministackorg/ministack:latest
+        ports:
+          - 4566:4566
+
+    steps:
+      - name: Wait for MiniStack
+        run: until curl -sf http://localhost:4566/_ministack/health; do sleep 2; done
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.0
+          terraform_wrapper: false
+
+      - name: Create state bucket in MiniStack
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_ENDPOINT_URL: http://localhost:4566
+        run: |
+          aws s3api create-bucket \
+            --bucket infrastructure-iac-agx-terraform-state \
+            --region eu-west-1 \
+            --create-bucket-configuration LocationConstraint=eu-west-1
+
+      - name: Initialise Terraform
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+        run: |
+          terraform init -reconfigure \
+            -backend-config="access_key=test" \
+            -backend-config="secret_key=test" \
+            -backend-config="endpoint=http://localhost:4566" \
+            -backend-config="force_path_style=true" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true"
+
+      - name: Apply against MiniStack
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_ENDPOINT_URL: http://localhost:4566
+        run: terraform apply -auto-approve
