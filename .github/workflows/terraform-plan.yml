@@ -18,6 +18,18 @@ jobs:
   terraform:
     name: Terraform Plan
     runs-on: ubuntu-latest
+    environment: pre-production
+
+    services:
+      ministack:
+        image: ministackorg/ministack:latest
+        ports:
+          - 4566:4566
+        options: >-
+          --health-cmd "curl -sf http://localhost:4566/_ministack/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout
@@ -61,3 +73,17 @@ jobs:
           name: terraform-plan
           path: terraform.plan
           if-no-files-found: error
+
+      - name: Initialise Terraform (LocalStack)
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_ENDPOINT_URL: http://localhost:4566
+        run: terraform init -reconfigure -backend=false
+
+      - name: Apply against LocalStack
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_ENDPOINT_URL: http://localhost:4566
+        run: terraform apply -auto-approve

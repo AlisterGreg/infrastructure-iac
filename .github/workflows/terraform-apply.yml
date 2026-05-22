@@ -19,6 +19,7 @@ jobs:
     name: Terraform Apply
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
+    environment: production
 
     steps:
       - name: Checkout
