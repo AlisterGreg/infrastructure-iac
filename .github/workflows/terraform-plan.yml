@@ -18,7 +18,6 @@ jobs:
   terraform:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    environment: pre-production
 
     steps:
       - name: Checkout
