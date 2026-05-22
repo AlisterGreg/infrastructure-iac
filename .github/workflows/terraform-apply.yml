@@ -1,0 +1,51 @@
+name: Terraform Apply
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Download Terraform Plan
+        uses: dawidd6/action-download-artifact@v16
+        with:
+          name: terraform-plan
+          workflow: terraform-plan.yml
+          workflow_conclusion: success
+          commit: ${{ github.event.pull_request.head.sha }}
+          path: ./artifacts
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.0
+          terraform_wrapper: false
+
+      - name: Initialise Terraform
+        run: terraform init
+
+      - name: Apply Terraform
+        run: terraform apply -auto-approve ./artifacts/terraform.plan
