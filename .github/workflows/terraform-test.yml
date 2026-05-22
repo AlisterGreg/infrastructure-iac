@@ -1,0 +1,40 @@
+name: Terraform Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: Terraform Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.0
+          terraform_wrapper: false
+
+      - name: Initialise Terraform
+        run: terraform init
+
+      - name: Run Terraform Tests
+        run: terraform test
