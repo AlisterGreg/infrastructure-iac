@@ -7,27 +7,16 @@ Terraform for the software factory: an API that starts Dependabot project-manage
 | Path | What it is |
 |---|---|
 | `*.tf` | Main stack: Lambdas, API Gateway, IAM, GitHub App key secret, log groups |
-| `bootstrap/` | One-time: IAM roles for GitHub Actions (plan on PRs, apply on merge) |
 | `terraform.tfvars.example` | Inputs. Copy to `terraform.tfvars` (gitignored) |
 | `src/`, `test/` | Lambda application code and unit tests (`npm test` equivalent: `node --test software-factory/test/*.test.mjs`) |
 
 State is in the existing bucket `infrastructure-iac-agx-terraform-state` under the key `software-factory/terraform.tfstate`.
 
-The Lambda code lives in `software-factory/src` and `software-factory/test`, and Terraform packages it from there. There is no separate app repo checkout.
+AWS access for the workflows uses the existing `AWS_ROLE_ARN` secret, the same role the root configuration uses. The Lambda code lives in `software-factory/src` and `software-factory/test`, and Terraform packages it from there. There is no separate app repo checkout.
 
 ## One-time setup
 
-1. **Bootstrap roles** (from a workstation, with AWS credentials for the account):
-
-   ```bash
-   cd software-factory/bootstrap
-   terraform init
-   terraform apply
-   ```
-
-   Note `plan_role_arn` and `apply_role_arn`.
-
-2. **GitHub App** (under AlisterGreg): Dependabot alerts (read), Issues (read and write), Metadata (read), Contents (read). Install it on the repositories to cover. Store its private key in AWS Secrets Manager (the Lambda reads it):
+1. **GitHub App** (under AlisterGreg): Dependabot alerts (read), Issues (read and write), Metadata (read), Contents (read). Install it on the repositories to cover. Store its private key in AWS Secrets Manager (the Lambda reads it):
 
    ```bash
    aws secretsmanager put-secret-value --region eu-west-1 \
@@ -35,14 +24,12 @@ The Lambda code lives in `software-factory/src` and `software-factory/test`, and
      --secret-string file://path/to/key.pem
    ```
 
-3. **Projects v2 board** under AlisterGreg, with single-select fields `Priority` (Urgent, High, Medium, Low) and `Size` (XS, S, M, L, XL). Use its number as `project_number`.
+2. **Projects v2 board** under AlisterGreg, with single-select fields `Priority` (Urgent, High, Medium, Low) and `Size` (XS, S, M, L, XL). Use its number as `project_number`.
 
-4. **Repository settings** on this repo (Settings → Secrets and variables → Actions):
+3. **Repository settings** on this repo (Settings → Secrets and variables → Actions):
 
    | Kind | Name | Value |
    |---|---|---|
-   | Variable | `SF_PLAN_ROLE_ARN` | `plan_role_arn` output |
-   | Variable | `SF_APPLY_ROLE_ARN` | `apply_role_arn` output |
    | Variable | `SF_GITHUB_APP_ID` | GitHub App ID |
    | Variable | `SF_PROJECT_OWNER` | `AlisterGreg` |
    | Variable | `SF_PROJECT_NUMBER` | Projects v2 number |
@@ -50,7 +37,7 @@ The Lambda code lives in `software-factory/src` and `software-factory/test`, and
 
    The `production` environment (already used by the root apply workflow) requires approval for applies.
 
-5. **Deploy:** merge a change under `software-factory/`. `software-factory-apply` runs after approval. Locally, `terraform apply` from this folder also works once `terraform.tfvars` is filled in.
+4. **Deploy:** merge a change under `software-factory/`. `software-factory-apply` runs after approval. Locally, `terraform apply` from this folder also works once `terraform.tfvars` is filled in.
 
 ## Workflows
 
