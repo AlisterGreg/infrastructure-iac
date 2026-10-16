@@ -1,0 +1,66 @@
+name: Software Factory Plan
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "software-factory/**"
+      - ".github/workflows/software-factory-*.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: software-factory-plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Software Factory Plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: software-factory
+    env:
+      TF_VAR_app_source_dir: ${{ github.workspace }}/software-factory-app/src
+      TF_VAR_github_app_id: ${{ vars.SF_GITHUB_APP_ID }}
+      TF_VAR_project_owner: ${{ vars.SF_PROJECT_OWNER }}
+      TF_VAR_project_number: ${{ vars.SF_PROJECT_NUMBER }}
+      TF_VAR_factory_key: ${{ secrets.SF_FACTORY_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Checkout application code
+        uses: actions/checkout@v6
+        with:
+          repository: AlisterGreg/software-factory
+          token: ${{ secrets.SF_APP_READ_TOKEN }}
+          path: software-factory-app
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SF_PLAN_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.0
+          terraform_wrapper: false
+
+      - name: Terraform fmt
+        run: terraform fmt -check -no-color -recursive
+
+      - name: Initialise Terraform
+        run: terraform init -input=false
+
+      - name: Validate Terraform
+        run: terraform validate -no-color
+
+      - name: Plan Terraform
+        run: terraform plan -input=false -no-color -out=tfplan

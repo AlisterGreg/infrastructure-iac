@@ -1,0 +1,18 @@
+# Software factory: local state, build output and the file holding the factory key
+software-factory/.terraform/
+software-factory/build/
+software-factory/*.tfstate
+software-factory/*.tfstate.*
+software-factory/*.tfplan
+software-factory/tfplan
+software-factory/terraform.tfvars
+software-factory/bootstrap/.terraform/
+software-factory/bootstrap/*.tfstate
+software-factory/bootstrap/*.tfstate.*
+software-factory/bootstrap/terraform.tfvars
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
