@@ -1,0 +1,60 @@
+name: Software Factory Apply
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+    paths:
+      - "software-factory/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: software-factory-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: Software Factory Apply
+    runs-on: ubuntu-latest
+    # Only merged changes apply. The `production` environment's required reviewers approve each run.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    environment: production
+    defaults:
+      run:
+        working-directory: software-factory
+    env:
+      TF_VAR_github_app_id: ${{ vars.SF_GITHUB_APP_ID }}
+      TF_VAR_factory_key: ${{ secrets.SF_FACTORY_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.0
+          terraform_wrapper: false
+
+      - name: Initialise Terraform
+        run: terraform init -input=false
+
+      - name: Plan Terraform
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Apply Terraform
+        run: terraform apply -input=false -no-color tfplan
+
+      - name: Outputs
+        run: terraform output

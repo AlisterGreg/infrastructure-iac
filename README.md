@@ -52,3 +52,7 @@ Override a variable at plan/apply time:
 ```bash
 terraform apply -var="aws_region=us-east-1"
 ```
+
+## Other stacks
+
+- [`software-factory/`](software-factory/README.md): Lambda API and Dependabot project-manager agents. Its own state key and workflows (`software-factory-*.yml`), path-filtered to its folder.

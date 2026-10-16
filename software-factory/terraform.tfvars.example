@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars (gitignored) and fill in the values.
+# The factory key can also come from the FACTORY_KEY secret in CI.
+
+github_app_id = "Iv23li..." # Client ID (or numeric App ID) from the App settings page
+factory_key     = "00000000-0000-0000-0000-000000000000"   # your shared GUID
