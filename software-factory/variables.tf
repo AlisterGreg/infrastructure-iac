@@ -11,12 +11,12 @@ variable "project_name" {
 }
 
 variable "github_app_id" {
-  description = "Numeric ID of the GitHub App (shown on the App's settings page)"
+  description = "GitHub App Client ID (Iv...) or numeric App ID, from the App settings page. Used as the JWT issuer; GitHub recommends the Client ID."
   type        = string
 
   validation {
-    condition     = can(regex("^[0-9]+$", var.github_app_id))
-    error_message = "github_app_id must be the numeric GitHub App ID (set SF_GITHUB_APP_ID)."
+    condition     = can(regex("^([0-9]+|Iv[0-9A-Za-z._]+)$", var.github_app_id))
+    error_message = "github_app_id must be the GitHub App Client ID (Iv...) or numeric App ID (set SF_GITHUB_APP_ID)."
   }
 }
 

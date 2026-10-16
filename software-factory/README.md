@@ -30,7 +30,7 @@ AWS access for the workflows uses the existing `AWS_ROLE_ARN` secret, the same r
 
    | Kind | Name | Value |
    |---|---|---|
-   | Variable | `SF_GITHUB_APP_ID` | GitHub App ID |
+   | Variable | `SF_GITHUB_APP_ID` | GitHub App Client ID (`Iv...`) or numeric App ID |
    | Secret | `SF_FACTORY_KEY` | the shared GUID callers send as `x-factory-key`. Generate one with `[guid]::NewGuid()` (PowerShell) or `uuidgen` |
 
    The `production` environment (already used by the root apply workflow) requires approval for applies.
