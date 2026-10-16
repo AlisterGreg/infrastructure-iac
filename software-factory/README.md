@@ -26,7 +26,7 @@ The Lambda code is packaged from a checkout of the application repo. Locally it 
 
    Note `plan_role_arn` and `apply_role_arn`.
 
-2. **GitHub App** (under AlisterGreg): Dependabot alerts (read), Issues (read and write), Metadata (read), Contents (read). Install it on the repositories to cover. Store its private key:
+2. **GitHub App** (under AlisterGreg): Dependabot alerts (read), Issues (read and write), Metadata (read), Contents (read). Install it on the repositories to cover, and on `software-factory` and `infrastructure-iac` so the workflows can check out the app code. Store its private key in AWS (the Lambda reads it), and also as the `SF_GITHUB_APP_PRIVATE_KEY` repo secret:
 
    ```bash
    aws secretsmanager put-secret-value --region eu-west-1 \
@@ -46,7 +46,7 @@ The Lambda code is packaged from a checkout of the application repo. Locally it 
    | Variable | `SF_PROJECT_OWNER` | `AlisterGreg` |
    | Variable | `SF_PROJECT_NUMBER` | Projects v2 number |
    | Secret | `SF_FACTORY_KEY` | the shared GUID |
-   | Secret | `SF_APP_READ_TOKEN` | fine-grained token, Contents read on `AlisterGreg/software-factory` |
+   | Secret | `SF_GITHUB_APP_PRIVATE_KEY` | private key (PEM) of the GitHub App. Workflows mint a short-lived token from it to check out the app repo |
 
    The `production` environment (already used by the root apply workflow) requires approval for applies.
 

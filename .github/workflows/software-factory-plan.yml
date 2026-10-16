@@ -35,11 +35,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SF_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SF_GITHUB_APP_PRIVATE_KEY }}
+          owner: AlisterGreg
+          repositories: software-factory
+
       - name: Checkout application code
         uses: actions/checkout@v6
         with:
           repository: AlisterGreg/software-factory
-          token: ${{ secrets.SF_APP_READ_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           path: software-factory-app
 
       - name: Configure AWS credentials (OIDC)
