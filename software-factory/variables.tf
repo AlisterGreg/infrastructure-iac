@@ -13,6 +13,11 @@ variable "project_name" {
 variable "github_app_id" {
   description = "Numeric ID of the GitHub App (shown on the App's settings page)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[0-9]+$", var.github_app_id))
+    error_message = "github_app_id must be the numeric GitHub App ID (set SF_GITHUB_APP_ID)."
+  }
 }
 
 variable "bedrock_model_id" {
@@ -25,6 +30,11 @@ variable "factory_key" {
   description = "Shared GUID that callers send in the x-factory-key header. Keep it in terraform.tfvars (not committed) or the FACTORY_KEY secret."
   type        = string
   sensitive   = true
+
+  validation {
+    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.factory_key))
+    error_message = "factory_key must be a GUID (set SF_FACTORY_KEY)."
+  }
 }
 
 variable "agent_max_turns" {

@@ -37,7 +37,7 @@ jobs:
           node-version: "22"
 
       - name: Unit tests
-        run: node --test software-factory/test/*.test.mjs
+        run: node --test test/*.test.mjs
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
