@@ -56,8 +56,3 @@ variable "github_app_secret_name" {
   default     = "software-factory/github-app-private-key"
 }
 
-variable "app_source_dir" {
-  description = "Path to the software-factory application's src directory, relative to this folder. CI checks the app repo out next to this one; locally it is a sibling clone."
-  type        = string
-  default     = "../../software-factory/src"
-}

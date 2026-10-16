@@ -13,7 +13,7 @@ locals {
   ]
 
   # Zip the whole src tree. Node.js needs no bundled packages: the AWS SDK is in the runtime.
-  source_dir = var.app_source_dir
+  source_dir = "${path.module}/src"
 }
 
 data "archive_file" "src" {

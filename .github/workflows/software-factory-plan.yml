@@ -25,7 +25,6 @@ jobs:
       run:
         working-directory: software-factory
     env:
-      TF_VAR_app_source_dir: ${{ github.workspace }}/software-factory-app/src
       TF_VAR_github_app_id: ${{ vars.SF_GITHUB_APP_ID }}
       TF_VAR_project_owner: ${{ vars.SF_PROJECT_OWNER }}
       TF_VAR_project_number: ${{ vars.SF_PROJECT_NUMBER }}
@@ -35,21 +34,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Create GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2
+      - uses: actions/setup-node@v4
         with:
-          app-id: ${{ vars.SF_GITHUB_APP_ID }}
-          private-key: ${{ secrets.SF_GITHUB_APP_PRIVATE_KEY }}
-          owner: AlisterGreg
-          repositories: software-factory
+          node-version: "22"
 
-      - name: Checkout application code
-        uses: actions/checkout@v6
-        with:
-          repository: AlisterGreg/software-factory
-          token: ${{ steps.app-token.outputs.token }}
-          path: software-factory-app
+      - name: Unit tests
+        run: node --test software-factory/test/*.test.mjs
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
