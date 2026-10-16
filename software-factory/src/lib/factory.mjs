@@ -14,6 +14,23 @@ export const EXTRA_LABELS = [
 ];
 const KEY_PATTERN = /<!-- security-planner-key: (.+?) -->/;
 
+// Priority and size are labels on the issue, e.g. "priority: high" and "size: M".
+export function priorityLabel(priority) {
+  return `priority: ${priority.toLowerCase()}`;
+}
+
+export function sizeLabel(size) {
+  return `size: ${size}`;
+}
+
+const PRIORITY_COLOURS = { urgent: 'b60205', high: 'd93f0b', medium: 'fbca04', low: '0e8a16' };
+
+export function labelColour(label) {
+  if (label.startsWith('priority: ')) return PRIORITY_COLOURS[label.slice('priority: '.length)] ?? 'ededed';
+  if (label.startsWith('size: ')) return 'c5def5';
+  return 'ededed';
+}
+
 export function alertKey(repoFullName, alertNumber) {
   return `dependabot-alert:${repoFullName}#${alertNumber}`;
 }
@@ -89,7 +106,7 @@ export function validateIssueInput(input) {
     body: input.body.trim(),
     priority: input.priority,
     size: input.size,
-    labels: [BASE_LABEL, input.type_label, ...extra],
+    labels: [BASE_LABEL, input.type_label, ...extra, priorityLabel(input.priority), sizeLabel(input.size)],
   };
 }
 

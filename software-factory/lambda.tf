@@ -2,8 +2,6 @@ locals {
   github_env = {
     GITHUB_APP_ID                = var.github_app_id
     GITHUB_PRIVATE_KEY_SECRET_ID = aws_secretsmanager_secret.github_app_key.name
-    PROJECT_OWNER                = var.project_owner
-    PROJECT_NUMBER               = tostring(var.project_number)
   }
 }
 

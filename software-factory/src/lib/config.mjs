@@ -4,8 +4,6 @@ export function loadConfig(env = process.env) {
     appId: env.GITHUB_APP_ID,
     privateKeySecretId: env.GITHUB_PRIVATE_KEY_SECRET_ID,
     factoryKey: env.FACTORY_KEY,
-    projectOwner: env.PROJECT_OWNER,
-    projectNumber: Number(env.PROJECT_NUMBER) || null,
     modelId: env.BEDROCK_MODEL_ID,
     projectManagerFunction: env.PROJECT_MANAGER_FUNCTION_NAME,
     maxTurns: Number(env.AGENT_MAX_TURNS ?? 25),

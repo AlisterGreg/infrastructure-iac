@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { alertKey, keyComment, planRun, validateIssueInput } from '../src/lib/factory.mjs';
+import { alertKey, keyComment, labelColour, planRun, validateIssueInput } from '../src/lib/factory.mjs';
 import { nextPageUrl, createAppJwt } from '../src/lib/github.mjs';
 import { generateKeyPairSync, createVerify } from 'node:crypto';
 
@@ -38,14 +38,14 @@ test('planRun caps new issues and reports the rest as deferred', () => {
   assert.equal(plan.deferred.length, 1);
 });
 
-test('validateIssueInput rejects a priority outside the board options', () => {
+test('validateIssueInput rejects a priority outside the allowed values', () => {
   assert.throws(
     () => validateIssueInput({ alert_number: 1, title: 't', body: 'b', priority: 'Critical', size: 'M', type_label: 'dep-upgrade' }),
     /priority must be one of/,
   );
 });
 
-test('validateIssueInput builds the label set with the base label first', () => {
+test('validateIssueInput adds type, priority and size labels', () => {
   const input = validateIssueInput({
     alert_number: 7,
     title: 'Upgrade lodash',
@@ -55,7 +55,7 @@ test('validateIssueInput builds the label set with the base label first', () => 
     type_label: 'waiting',
     extra_labels: ['waiting-upstream'],
   });
-  assert.deepEqual(input.labels, ['security-planner', 'waiting', 'waiting-upstream']);
+  assert.deepEqual(input.labels, ['security-planner', 'waiting', 'waiting-upstream', 'priority: high', 'size: S']);
   assert.equal(input.alertNumber, 7);
 });
 
@@ -83,4 +83,11 @@ test('createAppJwt signs a verifiable RS256 token with the app id as issuer', ()
   const claims = JSON.parse(Buffer.from(payload, 'base64url').toString());
   assert.equal(claims.iss, '12345');
   assert.ok(claims.exp - claims.iat <= 600);
+});
+
+test('labelColour colours priority labels by severity and size labels uniformly', () => {
+  assert.equal(labelColour('priority: urgent'), 'b60205');
+  assert.equal(labelColour('priority: low'), '0e8a16');
+  assert.equal(labelColour('size: XL'), 'c5def5');
+  assert.equal(labelColour('dep-upgrade'), 'ededed');
 });

@@ -26,8 +26,6 @@ jobs:
         working-directory: software-factory
     env:
       TF_VAR_github_app_id: ${{ vars.SF_GITHUB_APP_ID }}
-      TF_VAR_project_owner: ${{ vars.SF_PROJECT_OWNER }}
-      TF_VAR_project_number: ${{ vars.SF_PROJECT_NUMBER }}
       TF_VAR_factory_key: ${{ secrets.SF_FACTORY_KEY }}
 
     steps:

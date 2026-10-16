@@ -1,6 +1,8 @@
 # Software Factory infrastructure
 
-Terraform for the software factory: an API that starts Dependabot project-manager agents (Bedrock) for each repository a GitHub App can access. Application code lives in [AlisterGreg/software-factory](https://github.com/AlisterGreg/software-factory).
+Terraform for the software factory: an API that starts Dependabot project-manager agents (Bedrock) for each repository a GitHub App can access. Application code and Terraform both live in this folder.
+
+Each open Dependabot alert becomes one issue, labelled `security-planner`, a type (`dep-upgrade`, `waiting`, `dependency-removal`), `priority: urgent|high|medium|low` and `size: XS|S|M|L|XL`. Filter the repository issues by these labels to triage. No project board is used.
 
 ## Layout
 
@@ -24,20 +26,16 @@ AWS access for the workflows uses the existing `AWS_ROLE_ARN` secret, the same r
      --secret-string file://path/to/key.pem
    ```
 
-2. **Projects v2 board** under AlisterGreg, with single-select fields `Priority` (Urgent, High, Medium, Low) and `Size` (XS, S, M, L, XL). Use its number as `project_number`.
-
-3. **Repository settings** on this repo (Settings → Secrets and variables → Actions):
+2. **Repository settings** on this repo (Settings → Secrets and variables → Actions):
 
    | Kind | Name | Value |
    |---|---|---|
    | Variable | `SF_GITHUB_APP_ID` | GitHub App ID |
-   | Variable | `SF_PROJECT_OWNER` | `AlisterGreg` |
-   | Variable | `SF_PROJECT_NUMBER` | Projects v2 number |
-   | Secret | `SF_FACTORY_KEY` | the shared GUID |
+   | Secret | `SF_FACTORY_KEY` | the shared GUID callers send as `x-factory-key`. Generate one with `[guid]::NewGuid()` (PowerShell) or `uuidgen` |
 
    The `production` environment (already used by the root apply workflow) requires approval for applies.
 
-4. **Deploy:** merge a change under `software-factory/`. `software-factory-apply` runs after approval. Locally, `terraform apply` from this folder also works once `terraform.tfvars` is filled in.
+3. **Deploy:** merge a change under `software-factory/`. `software-factory-apply` runs after approval. Locally, `terraform apply` from this folder also works once `terraform.tfvars` is filled in.
 
 ## Workflows
 
@@ -61,4 +59,3 @@ Leave out `repos` to cover every accessible repository.
 ## Known issues
 
 - The root `README.md` says the state bucket is `infrastructure-iac-terraform-state`, but `versions.tf` uses `infrastructure-iac-agx-terraform-state`. This stack follows `versions.tf`.
-- The Projects v2 board may not be writable by a GitHub App on a personal account. If `board_errors` appears on created issues, the issues exist but are not on the board.

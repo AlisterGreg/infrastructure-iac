@@ -15,17 +15,6 @@ variable "github_app_id" {
   type        = string
 }
 
-variable "project_owner" {
-  description = "Login of the user or organisation that owns the Projects v2 board"
-  type        = string
-  default     = "AlisterGreg"
-}
-
-variable "project_number" {
-  description = "Number of the Projects v2 board (the number in its URL)"
-  type        = number
-}
-
 variable "bedrock_model_id" {
   description = "Bedrock inference profile ID for the project manager agent. Check availability in eu-west-1 with: aws bedrock list-inference-profiles --region eu-west-1"
   type        = string

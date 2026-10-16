@@ -1,5 +1,4 @@
-import { addIssueToBoard } from './board.mjs';
-import { alertKey, keyComment, validateIssueInput } from './factory.mjs';
+import { alertKey, keyComment, labelColour, validateIssueInput } from './factory.mjs';
 
 const MAX_FILE_CHARS = 20000;
 
@@ -22,7 +21,7 @@ export const TOOL_SPECS = [
     toolSpec: {
       name: 'create_issue',
       description:
-        'Create one issue for one Dependabot alert in the input, add it to the project board, and set its Priority and Size. Call once per alert.',
+        'Create one issue for one Dependabot alert in the input, labelled with its type, priority and size. Call once per alert.',
       inputSchema: {
         json: {
           type: 'object',
@@ -58,7 +57,7 @@ export const TOOL_SPECS = [
 // Builds the tools the agent can call for one repository.
 //   gh: GitHub client bound to an installation token
 //   newAlerts: Map of alert number -> alert, the only alerts this run may raise issues for
-export function createToolbox({ gh, owner, repo, newAlerts, board }) {
+export function createToolbox({ gh, owner, repo, newAlerts }) {
   const repoFullName = `${owner}/${repo}`;
   const raised = new Set();
   let existingLabels = null;
@@ -70,7 +69,7 @@ export function createToolbox({ gh, owner, repo, newAlerts, board }) {
     }
     for (const label of labels) {
       if (existingLabels.has(label)) continue;
-      await gh.rest('POST', `/repos/${owner}/${repo}/labels`, { name: label, color: 'ededed' });
+      await gh.rest('POST', `/repos/${owner}/${repo}/labels`, { name: label, color: labelColour(label) });
       existingLabels.add(label);
     }
   }
@@ -104,17 +103,7 @@ export function createToolbox({ gh, owner, repo, newAlerts, board }) {
     });
     raised.add(input.alertNumber);
 
-    const boardResult = board
-      ? await addIssueToBoard(gh, board, issue.node_id, { Priority: input.priority, Size: input.size })
-      : { errors: ['no project board configured'] };
-
-    return {
-      number: issue.number,
-      url: issue.html_url,
-      priority: input.priority,
-      size: input.size,
-      board_errors: boardResult.errors,
-    };
+    return { number: issue.number, url: issue.html_url, labels: input.labels };
   }
 
   const handlers = { read_repo_file: readRepoFile, create_issue: createIssue };

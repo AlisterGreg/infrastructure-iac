@@ -2,7 +2,6 @@
 // issues, then lets the Bedrock agent write an issue for each new alert.
 import { readFile } from 'node:fs/promises';
 import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
-import { loadBoard } from './lib/board.mjs';
 import { loadConfig, requireSettings } from './lib/config.mjs';
 import { BASE_LABEL, planRun, summariseAlert } from './lib/factory.mjs';
 import { createAppJwt, createGitHubClient, createInstallationToken } from './lib/github.mjs';
@@ -26,7 +25,7 @@ function buildUserText(repoFullName, alerts) {
 
 export async function handler(event) {
   const config = loadConfig();
-  requireSettings(config, ['appId', 'privateKeySecretId', 'modelId', 'projectOwner', 'projectNumber']);
+  requireSettings(config, ['appId', 'privateKeySecretId', 'modelId']);
   const { owner, repo, installation_id: installationId, run_id: runId } = event;
   if (!owner || !repo || !installationId) throw new Error('owner, repo and installation_id are required');
 
@@ -60,19 +59,11 @@ export async function handler(event) {
   }
 
   if (plan.toCreate.length > 0) {
-    let board = null;
-    try {
-      board = await loadBoard(gh, { owner: config.projectOwner, number: config.projectNumber });
-    } catch (error) {
-      summary.errors.push(`board: ${error.message}`);
-    }
-
     const toolbox = createToolbox({
       gh,
       owner,
       repo,
       newAlerts: new Map(plan.toCreate.map((alert) => [alert.number, alert])),
-      board,
     });
     try {
       const result = await runAgent({
